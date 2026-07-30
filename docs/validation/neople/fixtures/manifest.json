@@ -1,0 +1,13 @@
+{
+  "capturedAt": "2026-07-30T13:55:13.925Z",
+  "targetItemName": "+10 장비 증폭권[골고라이언]",
+  "itemId": "4a737b2ae337a57260ca4663ce6a9bb0",
+  "requests": [
+    "/df/items?itemName=%2B10+%EC%9E%A5%EB%B9%84+%EC%A6%9D%ED%8F%AD%EA%B6%8C%5B%EA%B3%A8%EA%B3%A0%EB%9D%BC%EC%9D%B4%EC%96%B8%5D&wordType=match&limit=30",
+    "/df/items/4a737b2ae337a57260ca4663ce6a9bb0",
+    "/df/auction?itemId=4a737b2ae337a57260ca4663ce6a9bb0&limit=400",
+    "/df/auction?itemId=4a737b2ae337a57260ca4663ce6a9bb0&limit=400&sort=unitPrice%3Aasc",
+    "/df/auction-sold?itemId=4a737b2ae337a57260ca4663ce6a9bb0&limit=100"
+  ],
+  "redaction": "Identity-like response values are replaced with [REDACTED]."
+}
