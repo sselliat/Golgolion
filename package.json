@@ -14,7 +14,11 @@
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
     "test:e2e": "playwright test",
-    "check": "npm run format:check && npm run lint && npm run typecheck && npm run test"
+    "check": "npm run format:check && npm run lint && npm run typecheck && npm run test",
+    "supabase:version": "supabase --version",
+    "supabase:start": "supabase start",
+    "supabase:status": "supabase status",
+    "supabase:stop": "supabase stop"
   },
   "dependencies": {
     "next": "16.2.12",
@@ -41,6 +45,7 @@
     "jsdom": "^30.0.1",
     "prettier": "^3.9.6",
     "prettier-plugin-tailwindcss": "^0.8.1",
+    "supabase": "2.110.0",
     "tailwindcss": "^4",
     "typescript": "^5",
     "typescript-eslint": "^8.65.0",
