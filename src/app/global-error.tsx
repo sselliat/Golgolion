@@ -19,7 +19,7 @@ export default function GlobalError({ unstable_retry }: GlobalErrorProps) {
           }}
         >
           <title>오류 | Golgolion</title>
-          <h1>서비스를 불러오지 못했습니다.</h1>
+          <h1>{APP_ERROR_MESSAGE.TITLE}</h1>
           <p>{APP_ERROR_MESSAGE.UNEXPECTED}</p>
           <button type="button" onClick={unstable_retry}>
             다시 시도
