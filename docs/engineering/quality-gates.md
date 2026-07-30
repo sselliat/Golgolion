@@ -4,17 +4,17 @@
 
 ## 적용 상태
 
-이 문서는 프로젝트 기반 구성 시 적용할 승인된 목표를 정의한다. 현재 저장소에는
-아직 `package.json`, 린트·테스트 도구 및 GitHub Actions workflow가 없으므로 아래
-검사 대부분은 실행 중인 상태가 아니다.
+이 문서는 프로젝트 품질 검사의 적용 상태와 목표를 정의한다. GOL-002에서 로컬
+검사 명령과 설정을 활성화했으며, 저장소 권한이 필요한 GitHub 설정은 아직 적용하지 않았다.
 
-| 항목 | 현재 상태 | 활성화 시점 |
-| --- | --- | --- |
-| Markdown 줄 길이 제외 설정 | 설정 파일만 적용 | 현재 |
-| ESLint, Prettier, TypeScript, Vitest | 승인된 목표 | GOL-002 |
-| Playwright와 Next.js build 검사 | 승인된 목표 | GOL-002 |
-| GitHub Actions와 merge gate | 승인된 목표 | GOL-002 이후 저장소 설정 시 |
-| coverage threshold | 수치 미확정 | 초기 구현의 실제 coverage 측정 후 |
+| 항목                            | 현재 상태        | 활성화 시점                 |
+| ------------------------------- | ---------------- | --------------------------- |
+| Markdown과 Prettier             | 로컬 script 적용 | GOL-002                     |
+| ESLint, TypeScript, Vitest      | 로컬 script 적용 | GOL-002                     |
+| Playwright와 Next.js build 검사 | 로컬 script 적용 | GOL-002                     |
+| GitHub Actions와 merge gate     | 미적용           | 저장소 설정 승인 후         |
+| coverage 명령                   | 로컬 script 적용 | GOL-002                     |
+| coverage threshold              | 수치 미확정      | GOL-003 도메인 구현 측정 후 |
 
 설정 파일과 실행 명령이 저장소에 추가되고 검증된 항목만 현재 적용 중인 검사로
 간주한다. 구현 상태가 바뀌면 이 표를 같은 변경에서 갱신한다.

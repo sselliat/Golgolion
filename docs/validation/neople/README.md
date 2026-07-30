@@ -23,15 +23,15 @@
 
 실제 아이템 검색 API의 정확 일치 결과는 한 건이었다.
 
-| 항목 | 값 |
-| --- | --- |
-| `itemId` | `4a737b2ae337a57260ca4663ce6a9bb0` |
-| `itemName` | `+10 장비 증폭권[골고라이언]` |
-| `itemRarity` | `유니크` |
-| `itemType` | `스태커블` |
-| `itemTypeDetail` | `기타` |
-| `itemAvailableLevel` | `1` |
-| `fame` | `0` |
+| 항목                 | 값                                 |
+| -------------------- | ---------------------------------- |
+| `itemId`             | `4a737b2ae337a57260ca4663ce6a9bb0` |
+| `itemName`           | `+10 장비 증폭권[골고라이언]`      |
+| `itemRarity`         | `유니크`                           |
+| `itemType`           | `스태커블`                         |
+| `itemTypeDetail`     | `기타`                             |
+| `itemAvailableLevel` | `1`                                |
+| `fame`               | `0`                                |
 
 ## 공식 문서로 확인한 계약
 
@@ -77,17 +77,17 @@
 
 아이템 검색 행에서 관찰한 필드는 다음과 같다.
 
-| 필드 | 관찰 자료형 | 표본 null |
-| --- | --- | --- |
-| `itemId` | string | 아니요 |
-| `itemName` | string | 아니요 |
-| `itemRarity` | string | 아니요 |
-| `itemTypeId` | string | 아니요 |
-| `itemType` | string | 아니요 |
-| `itemTypeDetailId` | string | 아니요 |
-| `itemTypeDetail` | string | 아니요 |
-| `itemAvailableLevel` | number | 아니요 |
-| `fame` | number | 아니요 |
+| 필드                 | 관찰 자료형 | 표본 null |
+| -------------------- | ----------- | --------- |
+| `itemId`             | string      | 아니요    |
+| `itemName`           | string      | 아니요    |
+| `itemRarity`         | string      | 아니요    |
+| `itemTypeId`         | string      | 아니요    |
+| `itemType`           | string      | 아니요    |
+| `itemTypeDetailId`   | string      | 아니요    |
+| `itemTypeDetail`     | string      | 아니요    |
+| `itemAvailableLevel` | number      | 아니요    |
+| `fame`               | number      | 아니요    |
 
 상세 응답에는 위 필드와 `itemExplain`, `itemExplainDetail`, `itemFlavorText`,
 `setItemId`, `setItemName`이 있었다. 대상 아이템의 `setItemId`와
@@ -98,15 +98,15 @@
 기본 정렬 호출에서 44건, 단가 오름차순 호출에서 45건을 관찰했다. 호출 사이에
 경매장 상태가 변할 수 있으므로 두 응답의 행 수 차이는 정상이다.
 
-| 필드 | 관찰 자료형 | 표본 null |
-| --- | --- | --- |
-| `auctionNo` | number | 아니요 |
-| `regDate`, `expireDate` | string | 아니요 |
-| 아이템 메타데이터 필드 | string/number | 아니요 |
-| `refine`, `reinforce`, `fame` | number | 아니요 |
-| `amplificationName` | null | 전체 |
-| `count`, `regCount` | number | 아니요 |
-| `price`, `currentPrice`, `unitPrice`, `averagePrice` | number | 아니요 |
+| 필드                                                 | 관찰 자료형   | 표본 null |
+| ---------------------------------------------------- | ------------- | --------- |
+| `auctionNo`                                          | number        | 아니요    |
+| `regDate`, `expireDate`                              | string        | 아니요    |
+| 아이템 메타데이터 필드                               | string/number | 아니요    |
+| `refine`, `reinforce`, `fame`                        | number        | 아니요    |
+| `amplificationName`                                  | null          | 전체      |
+| `count`, `regCount`                                  | number        | 아니요    |
+| `price`, `currentPrice`, `unitPrice`, `averagePrice` | number        | 아니요    |
 
 관찰 결과:
 
@@ -123,13 +123,13 @@
 `2026-07-30 22:50:19`, 가장 오래된 체결은 `2026-07-30 18:26:31`로,
 약 4시간 24분 분량만으로 100건 한도를 채웠다.
 
-| 필드 | 관찰 자료형 | 표본 null |
-| --- | --- | --- |
-| `soldDate` | string | 아니요 |
-| 아이템 메타데이터 필드 | string/number | 아니요 |
-| `refine`, `reinforce`, `fame` | number | 아니요 |
-| `amplificationName` | null | 전체 |
-| `count`, `price`, `unitPrice` | number | 아니요 |
+| 필드                          | 관찰 자료형   | 표본 null |
+| ----------------------------- | ------------- | --------- |
+| `soldDate`                    | string        | 아니요    |
+| 아이템 메타데이터 필드        | string/number | 아니요    |
+| `refine`, `reinforce`, `fame` | number        | 아니요    |
+| `amplificationName`           | null          | 전체      |
+| `count`, `price`, `unitPrice` | number        | 아니요    |
 
 관찰 결과:
 
