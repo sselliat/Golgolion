@@ -5,16 +5,17 @@
 ## 적용 상태
 
 이 문서는 프로젝트 품질 검사의 적용 상태와 목표를 정의한다. GOL-002에서 로컬
-검사 명령과 설정을 활성화했으며, 저장소 권한이 필요한 GitHub 설정은 아직 적용하지 않았다.
+검사 명령과 설정을 활성화했고, issue #15에서 TypeScript와 Next.js build CI 및
+merge gate를 적용했다.
 
-| 항목                            | 현재 상태        | 활성화 시점                 |
-| ------------------------------- | ---------------- | --------------------------- |
-| Markdown과 Prettier             | 로컬 script 적용 | GOL-002                     |
-| ESLint, TypeScript, Vitest      | 로컬 script 적용 | GOL-002                     |
-| Playwright와 Next.js build 검사 | 로컬 script 적용 | GOL-002                     |
-| GitHub Actions와 merge gate     | 미적용           | 저장소 설정 승인 후         |
-| coverage 명령                   | 로컬 script 적용 | GOL-002                     |
-| coverage threshold              | 수치 미확정      | GOL-003 도메인 구현 측정 후 |
+| 항목                            | 현재 상태            | 활성화 시점                 |
+| ------------------------------- | -------------------- | --------------------------- |
+| Markdown과 Prettier             | 로컬 script 적용     | GOL-002                     |
+| ESLint, TypeScript, Vitest      | 로컬 script 적용     | GOL-002                     |
+| Playwright와 Next.js build 검사 | 로컬 script 적용     | GOL-002                     |
+| GitHub Actions와 merge gate     | typecheck·build 적용 | issue #15                   |
+| coverage 명령                   | 로컬 script 적용     | GOL-002                     |
+| coverage threshold              | 수치 미확정          | GOL-003 도메인 구현 측정 후 |
 
 설정 파일과 실행 명령이 저장소에 추가되고 검증된 항목만 현재 적용 중인 검사로
 간주한다. 구현 상태가 바뀌면 이 표를 같은 변경에서 갱신한다.
