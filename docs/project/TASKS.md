@@ -4,14 +4,6 @@
 
 ## Approved
 
-### GOL-002 Next.js 프로젝트 기반 구성
-
-- 결과: TypeScript, App Router, npm, Tailwind CSS 기반 실행 가능한 앱
-- 범위: 린트, Vitest, Playwright, 환경변수 검증, 기본 오류 처리
-- 제외: 데이터 수집기와 완성 UI
-- 검증: 린트, 단위 테스트, 빌드, Playwright 스모크 테스트
-- 선행 작업: 없음
-
 ### GOL-003 Supabase 데이터 수집 파이프라인
 
 - 결과: 중복 없이 체결 내역과 일봉을 저장하는 10분 수집기
@@ -56,3 +48,11 @@
 - 검증: fixture 기반 계약 테스트와 제한된 실제 API 호출
 - 선행 작업: 없음
 - 필요 정보: 네오플 API 키
+
+### GOL-002 Next.js 프로젝트 기반 구성
+
+- 결과: TypeScript, App Router, npm, Tailwind CSS 기반 실행 가능한 앱
+- 범위: 린트, Vitest, Playwright, 환경변수 검증, 기본 오류 처리
+- 제외: 데이터 수집기와 완성 UI
+- 검증: 린트, 단위 테스트, 빌드, Playwright 스모크 테스트
+- 선행 작업: 없음

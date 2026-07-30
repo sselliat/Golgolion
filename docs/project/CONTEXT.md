@@ -48,9 +48,9 @@
 
 ## Current phase
 
-Discovery complete
+Application foundation complete
 
-Implementation is awaiting separate approval.
+GOL-003 data collection pipeline is ready to start.
 
 ## Constraints and risks
 
