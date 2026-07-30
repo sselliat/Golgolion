@@ -27,17 +27,17 @@
 
 ## 작업별 문서 선택
 
-| 작업 범위 | 읽을 문서 |
-| --- | --- |
-| 파일·폴더 생성, 이동, 이름 변경 | [명명법과 파일 구조](conventions/project-structure.md) |
-| React 컴포넌트, 훅, 일반 함수 | [컴포넌트와 함수](conventions/react-and-functions.md) |
-| TypeScript 타입, import, export | [TypeScript](conventions/typescript.md) |
-| 오류, API, 외부 시스템, 수집, 재시도, 로깅 | [오류 처리](conventions/error-handling.md) |
-| 테스트, fixture, mock, coverage | [테스트](conventions/testing.md) |
-| 복잡한 주석, JSDoc, TODO, 검사 억제 | [주석](conventions/comments.md) |
-| 시세 계산, 일봉, 수집, 데이터 상태 | [시세 도메인](domains/market-price.md) |
-| 커밋, 브랜치, 이슈, Pull Request, merge | [기여 규칙](CONTRIBUTING.md) |
-| ESLint, Prettier, TypeScript 설정, CI | [품질 검사](engineering/quality-gates.md) |
+| 작업 범위                                  | 읽을 문서                                              |
+| ------------------------------------------ | ------------------------------------------------------ |
+| 파일·폴더 생성, 이동, 이름 변경            | [명명법과 파일 구조](conventions/project-structure.md) |
+| React 컴포넌트, 훅, 일반 함수              | [컴포넌트와 함수](conventions/react-and-functions.md)  |
+| TypeScript 타입, import, export            | [TypeScript](conventions/typescript.md)                |
+| 오류, API, 외부 시스템, 수집, 재시도, 로깅 | [오류 처리](conventions/error-handling.md)             |
+| 테스트, fixture, mock, coverage            | [테스트](conventions/testing.md)                       |
+| 복잡한 주석, JSDoc, TODO, 검사 억제        | [주석](conventions/comments.md)                        |
+| 시세 계산, 일봉, 수집, 데이터 상태         | [시세 도메인](domains/market-price.md)                 |
+| 커밋, 브랜치, 이슈, Pull Request, merge    | [기여 규칙](CONTRIBUTING.md)                           |
+| ESLint, Prettier, TypeScript 설정, CI      | [품질 검사](engineering/quality-gates.md)              |
 
 하나의 작업이 여러 범위에 걸치면 해당 문서를 모두 읽는다. 관련 없는 세부 문서는
 읽지 않는다.

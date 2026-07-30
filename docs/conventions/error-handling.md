@@ -14,8 +14,7 @@
 
 ```ts
 type FetchMarketPriceResult =
-  | { ok: true; data: MarketPrice }
-  | { ok: false; error: MarketPriceFailure };
+  { ok: true; data: MarketPrice } | { ok: false; error: MarketPriceFailure };
 
 type MarketPriceFailure =
   | { code: typeof MARKET_PRICE_ERROR_CODE.UPSTREAM_UNAVAILABLE }
@@ -115,10 +114,8 @@ export type MarketPriceErrorCode =
   (typeof MARKET_PRICE_ERROR_CODE)[keyof typeof MARKET_PRICE_ERROR_CODE];
 
 export const MARKET_PRICE_ERROR_MESSAGE = {
-  [MARKET_PRICE_ERROR_CODE.UPSTREAM_UNAVAILABLE]:
-    '시세 데이터를 일시적으로 불러올 수 없습니다.',
-  [MARKET_PRICE_ERROR_CODE.INVALID_UPSTREAM_RESPONSE]:
-    '시세 데이터 형식을 확인할 수 없습니다.',
+  [MARKET_PRICE_ERROR_CODE.UPSTREAM_UNAVAILABLE]: '시세 데이터를 일시적으로 불러올 수 없습니다.',
+  [MARKET_PRICE_ERROR_CODE.INVALID_UPSTREAM_RESPONSE]: '시세 데이터 형식을 확인할 수 없습니다.',
 } as const satisfies Record<MarketPriceErrorCode, string>;
 
 export const MARKET_PRICE_INTERNAL_ERROR_MESSAGE = {

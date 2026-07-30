@@ -47,10 +47,7 @@ import './price-chart.css';
 ```ts
 import type { DailyCandle } from '@/features/market-price/types';
 
-import {
-  calculateCurrentPrice,
-  type CurrentPriceOptions,
-} from '@/features/market-price';
+import { calculateCurrentPrice, type CurrentPriceOptions } from '@/features/market-price';
 
 export type { MarketPriceResponse } from './types';
 ```
@@ -84,9 +81,7 @@ type PricePoint = readonly [timestamp: number, price: number];
 - `catch` 값과 외부 입력처럼 확인되지 않은 값은 `unknown`에서 시작한다.
 
 ```ts
-export function calculateCurrentPrice(
-  options: CurrentPriceOptions,
-): CurrentPriceResult {
+export function calculateCurrentPrice(options: CurrentPriceOptions): CurrentPriceResult {
   const sampleSize = options.prices.length;
   // sampleSize는 number로 추론된다.
 }

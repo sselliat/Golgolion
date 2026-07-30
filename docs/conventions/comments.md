@@ -43,9 +43,7 @@ return expiresAt >= now;
  *
  * 체결이 없는 날짜를 이전 종가로 채우지 않는다.
  */
-export function aggregateDailyCandles(
-  trades: readonly CompletedTrade[],
-): readonly DailyCandle[] {
+export function aggregateDailyCandles(trades: readonly CompletedTrade[]): readonly DailyCandle[] {
   // ...
 }
 ```

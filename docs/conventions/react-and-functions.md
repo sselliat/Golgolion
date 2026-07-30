@@ -16,9 +16,7 @@ interface PriceChartProps {
 }
 
 export function PriceChart({ candles }: PriceChartProps) {
-  return candles.map((candle) => (
-    <div key={candle.date}>{candle.close}</div>
-  ));
+  return candles.map((candle) => <div key={candle.date}>{candle.close}</div>);
 }
 ```
 
