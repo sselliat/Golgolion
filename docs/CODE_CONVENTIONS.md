@@ -36,7 +36,6 @@
 | 테스트, fixture, mock, coverage            | [테스트](conventions/testing.md)                       |
 | 복잡한 주석, JSDoc, TODO, 검사 억제        | [주석](conventions/comments.md)                        |
 | 시세 계산, 일봉, 수집, 데이터 상태         | [시세 도메인](domains/market-price.md)                 |
-| 커밋, 브랜치, 이슈, Pull Request, merge    | [기여 규칙](CONTRIBUTING.md)                           |
 | ESLint, Prettier, TypeScript 설정, CI      | [품질 검사](engineering/quality-gates.md)              |
 
 하나의 작업이 여러 범위에 걸치면 해당 문서를 모두 읽는다. 관련 없는 세부 문서는
