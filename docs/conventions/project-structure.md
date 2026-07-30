@@ -26,12 +26,20 @@ src/
 tests/
 ├─ fixtures/
 └─ e2e/
+supabase/
+├─ config.toml
+├─ migrations/
+└─ functions/
 ```
 
 - 테스트와 fixture를 제외한 구현 파일은 `src/` 아래에 둔다.
 - 여러 기능에서 사용하는 코드는 `src/components`, `src/lib`, `src/types`처럼 역할별 공용 디렉터리에 둔다.
 - 특정 도메인에 속한 코드는 `src/features/<feature-name>` 아래에 기능별로 모은다.
 - App Router의 라우트와 프레임워크 특수 파일은 `src/app` 아래에 둔다.
+- `supabase/`는 Supabase CLI가 경로를 강제하는 도구 전용 예외다. CLI 설정,
+  데이터베이스 마이그레이션 및 Edge Function은 각각 `supabase/config.toml`,
+  `supabase/migrations/`, `supabase/functions/`에 둔다.
+- `supabase/.temp/`와 `supabase/.branches/` 같은 로컬 생성물은 추적하지 않는다.
 
 ## 명명 규칙
 
