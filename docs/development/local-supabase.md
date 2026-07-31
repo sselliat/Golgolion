@@ -78,6 +78,22 @@ supabase/
 `supabase/.gitignore`는 CLI가 생성하는 임시 파일과 로컬 환경 파일을 제외하며,
 저장소 루트 `.gitignore`는 `.env.example`을 제외한 환경 파일을 제외한다.
 
+## 데이터베이스 마이그레이션 검증
+
+로컬 스택을 시작한 뒤 마이그레이션을 처음부터 다시 적용하고 데이터베이스 테스트와
+린트를 실행한다. `supabase:db:reset`은 로컬 데이터베이스를 삭제하고 저장소의
+마이그레이션으로 다시 만들므로 운영 또는 공유 데이터베이스에는 실행하지 않는다.
+
+```powershell
+npm run supabase:start
+npm run supabase:db:reset
+npm run supabase:test:db
+npm run supabase:db:lint
+```
+
+데이터베이스 테스트는 `supabase/tests/database/`에 두며 pgTAP 형식으로 작성한다.
+원격 프로젝트를 연결하지 않고 고정된 로컬 CLI와 Docker 런타임만 사용한다.
+
 ## PR 검증
 
 로컬 Supabase 관련 변경은 다음 순서로 검증하고 실제 결과를 PR 본문에 기록한다.
@@ -87,6 +103,9 @@ npm ci
 npm run supabase:version
 npm run supabase:start
 npm run supabase:status
+npm run supabase:db:reset
+npm run supabase:test:db
+npm run supabase:db:lint
 npm run supabase:stop
 npm run check
 npm run build
