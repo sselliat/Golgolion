@@ -5,5 +5,7 @@ coverage
 node_modules
 package-lock.json
 playwright-report
+supabase/.branches
+supabase/.temp
 test-results
 docs/validation/neople/fixtures/*.json
