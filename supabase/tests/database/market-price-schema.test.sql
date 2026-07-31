@@ -1,6 +1,6 @@
 begin;
 
-select plan(36);
+select plan(37);
 
 select has_table('public', 'market_items', '수집 대상 아이템 테이블이 존재한다');
 select has_table('public', 'market_collection_runs', '수집 실행 이력 테이블이 존재한다');
@@ -34,6 +34,7 @@ select is(
     from public.market_items
     where item_id = '4a737b2ae337a57260ca4663ce6a9bb0'
       and variant_level = 10
+      and is_enabled
   ),
   1,
   'MVP +10 아이템이 마이그레이션에 포함된다'
@@ -65,6 +66,16 @@ select lives_ok(
     values ('bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb', '+11 장비 증폭권[골고라이언]', 11)
   $$,
   '+1부터 +15까지 다른 골고라이언 변형을 추가할 수 있다'
+);
+
+select is(
+  (
+    select is_enabled
+    from public.market_items
+    where item_id = 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'
+  ),
+  false,
+  '새로 등록한 변형은 검증 후 활성화할 때까지 수집하지 않는다'
 );
 
 select throws_ok(

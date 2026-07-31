@@ -2,7 +2,7 @@ create table public.market_items (
   item_id text primary key,
   item_name text not null,
   variant_level smallint not null unique,
-  is_enabled boolean not null default true,
+  is_enabled boolean not null default false,
   created_at timestamptz not null default statement_timestamp(),
   updated_at timestamptz not null default statement_timestamp(),
   constraint market_items_item_id_format_check
@@ -17,6 +17,8 @@ comment on table public.market_items is
   '수집 대상 골고라이언 아이템과 +1부터 +15까지의 확장 가능한 변형 정보';
 comment on column public.market_items.item_id is '네오플 API itemId';
 comment on column public.market_items.variant_level is '골고라이언 증폭권의 +1부터 +15까지 단계';
+comment on column public.market_items.is_enabled is
+  '예약 수집 대상 여부. 검증 후 명시적으로 활성화하지 않은 신규 아이템은 기본 비활성화';
 
 create table public.market_collection_runs (
   id bigint generated always as identity primary key,
@@ -374,9 +376,10 @@ to service_role;
 revoke all on function public.set_market_updated_at() from public, anon, authenticated;
 grant execute on function public.set_market_updated_at() to service_role;
 
-insert into public.market_items (item_id, item_name, variant_level)
+insert into public.market_items (item_id, item_name, variant_level, is_enabled)
 values (
   '4a737b2ae337a57260ca4663ce6a9bb0',
   '+10 장비 증폭권[골고라이언]',
-  10
+  10,
+  true
 );
