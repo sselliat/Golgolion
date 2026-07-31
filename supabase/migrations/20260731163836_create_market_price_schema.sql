@@ -31,7 +31,10 @@ create table public.market_collection_runs (
   failure_code text,
   started_at timestamptz not null default statement_timestamp(),
   finished_at timestamptz,
-  constraint market_collection_runs_id_item_key unique (id, item_id),
+  constraint market_collection_runs_trade_source_key
+    unique (id, item_id, collection_type, status),
+  constraint market_collection_runs_fetched_row_count_key
+    unique (id, fetched_row_count),
   constraint market_collection_runs_collection_type_check
     check (collection_type in ('trade-history', 'auction-listings')),
   constraint market_collection_runs_status_check
@@ -46,6 +49,11 @@ create table public.market_collection_runs (
     ),
   constraint market_collection_runs_fetched_row_count_check
     check (fetched_row_count between 0 and requested_row_limit),
+  constraint market_collection_runs_failure_code_check
+    check (
+      failure_code is null
+      or failure_code ~ '^[a-z][a-z0-9_]{0,63}$'
+    ),
   constraint market_collection_runs_sold_at_range_check
     check (
       (oldest_sold_at is null and newest_sold_at is null)
@@ -101,7 +109,7 @@ create table public.market_collection_runs (
 comment on table public.market_collection_runs is
   '무거래 성공과 수집 실패를 구분하고 체결 연속성 판정 근거를 보존하는 실행 이력';
 comment on column public.market_collection_runs.failure_code is
-  '비밀값이나 외부 응답 본문을 포함하지 않는 안전한 내부 오류 코드';
+  '소문자 영문으로 시작하고 소문자·숫자·밑줄만 사용하는 최대 64자의 내부 오류 코드';
 comment on column public.market_collection_runs.oldest_sold_at is
   '체결 응답에서 가장 오래된 시각이며 등록 매물 수집에는 사용하지 않음';
 comment on column public.market_collection_runs.newest_sold_at is
@@ -121,6 +129,8 @@ create table public.market_trades (
   occurrence_count smallint not null,
   first_seen_collection_id bigint not null,
   last_seen_collection_id bigint not null,
+  source_collection_type text generated always as ('trade-history') stored,
+  source_collection_status text generated always as ('succeeded') stored,
   created_at timestamptz not null default statement_timestamp(),
   updated_at timestamptz not null default statement_timestamp(),
   constraint market_trades_id_item_key unique (id, item_id),
@@ -128,11 +138,23 @@ create table public.market_trades (
   constraint market_trades_source_key
     unique (item_id, sold_at, unit_price, quantity),
   constraint market_trades_first_seen_collection_fk
-    foreign key (first_seen_collection_id, item_id)
-    references public.market_collection_runs (id, item_id),
+    foreign key (
+      first_seen_collection_id,
+      item_id,
+      source_collection_type,
+      source_collection_status
+    )
+    references public.market_collection_runs (id, item_id, collection_type, status)
+    deferrable initially immediate,
   constraint market_trades_last_seen_collection_fk
-    foreign key (last_seen_collection_id, item_id)
-    references public.market_collection_runs (id, item_id),
+    foreign key (
+      last_seen_collection_id,
+      item_id,
+      source_collection_type,
+      source_collection_status
+    )
+    references public.market_collection_runs (id, item_id, collection_type, status)
+    deferrable initially immediate,
   constraint market_trades_unit_price_check
     check (unit_price > 0),
   constraint market_trades_quantity_check
@@ -160,6 +182,8 @@ create index market_trades_item_sold_at_idx
   on public.market_trades (item_id, sold_at desc);
 create index market_trades_sold_at_idx
   on public.market_trades (sold_at);
+create index market_trades_first_seen_collection_id_idx
+  on public.market_trades (first_seen_collection_id);
 create index market_trades_last_seen_collection_id_idx
   on public.market_trades (last_seen_collection_id);
 
@@ -227,18 +251,30 @@ create table public.market_current_prices (
   item_id text primary key references public.market_items (item_id),
   price bigint,
   status text not null,
-  listing_count integer not null,
-  unique_unit_price_count integer not null,
+  listing_count smallint not null,
+  unique_unit_price_count smallint not null,
   candidate_price_count smallint not null,
   representative_price_count smallint not null,
   source_collection_id bigint not null,
+  source_collection_type text generated always as ('auction-listings') stored,
+  source_collection_status text generated always as ('succeeded') stored,
   calculated_at timestamptz not null,
   updated_at timestamptz not null default statement_timestamp(),
   constraint market_current_prices_status_check
     check (status in ('available', 'no-listings')),
   constraint market_current_prices_source_collection_fk
-    foreign key (source_collection_id, item_id)
-    references public.market_collection_runs (id, item_id),
+    foreign key (
+      source_collection_id,
+      item_id,
+      source_collection_type,
+      source_collection_status
+    )
+    references public.market_collection_runs (id, item_id, collection_type, status)
+    deferrable initially immediate,
+  constraint market_current_prices_source_row_count_fk
+    foreign key (source_collection_id, listing_count)
+    references public.market_collection_runs (id, fetched_row_count)
+    deferrable initially immediate,
   constraint market_current_prices_counts_check
     check (
       listing_count >= 0
