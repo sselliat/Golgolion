@@ -8,7 +8,7 @@ body="${BODY:-}"
 errors=()
 
 contains_korean() {
-  LC_ALL=C.UTF-8 grep -Eq '[가-힣]' <<< "$1"
+  perl -CS -e 'my $text = do { local $/; <STDIN> }; exit($text =~ /[\x{AC00}-\x{D7A3}]/ ? 0 : 1)' <<< "$1"
 }
 
 if [[ "$mode" == "pr" ]]; then
