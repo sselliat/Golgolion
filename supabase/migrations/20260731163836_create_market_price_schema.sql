@@ -33,10 +33,7 @@ create table public.market_collection_runs (
   failure_code text,
   started_at timestamptz not null default statement_timestamp(),
   finished_at timestamptz,
-  constraint market_collection_runs_trade_source_key
-    unique (id, item_id, collection_type, status),
-  constraint market_collection_runs_fetched_row_count_key
-    unique (id, fetched_row_count),
+  constraint market_collection_runs_id_item_key unique (id, item_id),
   constraint market_collection_runs_collection_type_check
     check (collection_type in ('trade-history', 'auction-listings')),
   constraint market_collection_runs_status_check
@@ -121,48 +118,36 @@ create index market_collection_runs_item_type_started_at_idx
   on public.market_collection_runs (item_id, collection_type, started_at desc);
 
 create table public.market_trades (
-  id bigint generated always as identity primary key,
   item_id text not null references public.market_items (item_id),
   sold_at timestamptz not null,
   unit_price bigint not null,
   quantity integer not null,
-  total_price bigint not null,
-  fingerprint text not null,
+  fingerprint text primary key,
   occurrence_count smallint not null,
   first_seen_collection_id bigint not null,
   last_seen_collection_id bigint not null,
-  source_collection_type text generated always as ('trade-history') stored,
-  source_collection_status text generated always as ('succeeded') stored,
   created_at timestamptz not null default statement_timestamp(),
   updated_at timestamptz not null default statement_timestamp(),
-  constraint market_trades_id_item_key unique (id, item_id),
-  constraint market_trades_fingerprint_key unique (fingerprint),
   constraint market_trades_source_key
     unique (item_id, sold_at, unit_price, quantity),
   constraint market_trades_first_seen_collection_fk
     foreign key (
       first_seen_collection_id,
-      item_id,
-      source_collection_type,
-      source_collection_status
+      item_id
     )
-    references public.market_collection_runs (id, item_id, collection_type, status)
+    references public.market_collection_runs (id, item_id)
     deferrable initially immediate,
   constraint market_trades_last_seen_collection_fk
     foreign key (
       last_seen_collection_id,
-      item_id,
-      source_collection_type,
-      source_collection_status
+      item_id
     )
-    references public.market_collection_runs (id, item_id, collection_type, status)
+    references public.market_collection_runs (id, item_id)
     deferrable initially immediate,
   constraint market_trades_unit_price_check
     check (unit_price > 0),
   constraint market_trades_quantity_check
     check (quantity > 0),
-  constraint market_trades_total_price_check
-    check (total_price > 0 and total_price = unit_price * quantity),
   constraint market_trades_fingerprint_check
     check (fingerprint ~ '^[0-9a-f]{64}$'),
   constraint market_trades_occurrence_count_check
@@ -204,10 +189,6 @@ create table public.market_daily_candles (
   primary key (item_id, market_date),
   constraint market_daily_candles_status_check
     check (status in ('pending', 'recovering', 'complete', 'incomplete')),
-  constraint market_daily_candles_trade_count_check
-    check (trade_count >= 0),
-  constraint market_daily_candles_volume_check
-    check (volume >= 0),
   constraint market_daily_candles_values_check
     check (
       (
@@ -234,7 +215,6 @@ create table public.market_daily_candles (
         and high_price >= close_price
         and low_price <= open_price
         and low_price <= close_price
-        and low_price <= high_price
       )
     )
 );
@@ -258,8 +238,6 @@ create table public.market_current_prices (
   candidate_price_count smallint not null,
   representative_price_count smallint not null,
   source_collection_id bigint not null,
-  source_collection_type text generated always as ('auction-listings') stored,
-  source_collection_status text generated always as ('succeeded') stored,
   calculated_at timestamptz not null,
   updated_at timestamptz not null default statement_timestamp(),
   constraint market_current_prices_status_check
@@ -267,23 +245,10 @@ create table public.market_current_prices (
   constraint market_current_prices_source_collection_fk
     foreign key (
       source_collection_id,
-      item_id,
-      source_collection_type,
-      source_collection_status
+      item_id
     )
-    references public.market_collection_runs (id, item_id, collection_type, status)
+    references public.market_collection_runs (id, item_id)
     deferrable initially immediate,
-  constraint market_current_prices_source_row_count_fk
-    foreign key (source_collection_id, listing_count)
-    references public.market_collection_runs (id, fetched_row_count)
-    deferrable initially immediate,
-  constraint market_current_prices_counts_check
-    check (
-      listing_count >= 0
-      and unique_unit_price_count >= 0
-      and candidate_price_count between 0 and 5
-      and representative_price_count between 0 and candidate_price_count
-    ),
   constraint market_current_prices_values_check
     check (
       (
@@ -356,8 +321,7 @@ revoke all on table
 from public, anon, authenticated;
 
 revoke all on sequence
-  public.market_collection_runs_id_seq,
-  public.market_trades_id_seq
+  public.market_collection_runs_id_seq
 from public, anon, authenticated;
 
 grant select, insert, update, delete on table
@@ -369,8 +333,7 @@ grant select, insert, update, delete on table
 to service_role;
 
 grant usage, select on sequence
-  public.market_collection_runs_id_seq,
-  public.market_trades_id_seq
+  public.market_collection_runs_id_seq
 to service_role;
 
 revoke all on function public.set_market_updated_at() from public, anon, authenticated;

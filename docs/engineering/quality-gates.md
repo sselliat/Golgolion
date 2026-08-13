@@ -55,7 +55,6 @@ merge gate를 적용했다.
 - 판별 가능한 유니온을 처리하는 switch의 case 누락
 - 위험한 타입 기반 호출, 할당 및 반환
 - 커밋된 `test.only`
-- Tailwind 중복 클래스
 
 - ESLint warning은 CI 출력에 표시하지만 CI 실패 조건으로 사용하지 않는다.
 - CI에서 `--max-warnings=0`을 사용하지 않는다.
@@ -66,17 +65,6 @@ merge gate를 적용했다.
 ```text
 eslint .
 ```
-
-## import와 파일명 검사
-
-- import 정렬에는 `eslint-plugin-simple-import-sort`를 사용한다.
-- 외부 패키지, `@/` 내부 경로, 상대 경로, CSS 등 부수 효과 순으로 그룹을 설정한다.
-- import 순서 오류는 ESLint 자동 수정 대상으로 처리한다.
-- 순수 type import 여부는 ESLint와 TypeScript가 검사한다.
-- 혼합 import의 인라인 `type` 형식은 승인된 규칙과 자동 수정 결과가 충돌하지 않도록 설정한다.
-- 파일명은 가능한 범위에서 `kebab-case`와 `PascalCase`만 허용하도록 검사한다.
-- 컴포넌트 여부를 도구가 확실히 판단하지 못하면 컴포넌트와 일반 파일의 정확한 구분은 코드 리뷰에서 확인한다.
-- Next.js 특수 파일과 동적 라우트 폴더는 파일명 검사 예외로 명시한다.
 
 ## Prettier
 

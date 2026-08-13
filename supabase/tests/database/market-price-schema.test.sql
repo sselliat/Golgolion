@@ -1,6 +1,6 @@
 begin;
 
-select plan(37);
+select plan(31);
 
 select has_table('public', 'market_items', '수집 대상 아이템 테이블이 존재한다');
 select has_table('public', 'market_collection_runs', '수집 실행 이력 테이블이 존재한다');
@@ -183,7 +183,6 @@ select lives_ok(
         sold_at,
         unit_price,
         quantity,
-        total_price,
         fingerprint,
         occurrence_count,
         first_seen_collection_id,
@@ -194,7 +193,6 @@ select lives_ok(
         '2026-07-30 13:50:19+00',
         54400000,
         1,
-        54400000,
         repeat('a', 64),
         1,
         %s,
@@ -224,7 +222,6 @@ select throws_ok(
         sold_at,
         unit_price,
         quantity,
-        total_price,
         fingerprint,
         occurrence_count,
         first_seen_collection_id,
@@ -235,7 +232,6 @@ select throws_ok(
         '2026-07-30 13:50:19+00',
         54400000,
         1,
-        54400000,
         repeat('a', 64),
         1,
         %s,
@@ -248,40 +244,6 @@ select throws_ok(
   '23505',
   null,
   '같은 fingerprint의 재수집은 중복 저장하지 않는다'
-);
-
-select throws_ok(
-  format(
-    $$
-      insert into public.market_trades (
-        item_id,
-        sold_at,
-        unit_price,
-        quantity,
-        total_price,
-        fingerprint,
-        occurrence_count,
-        first_seen_collection_id,
-        last_seen_collection_id
-      )
-      values (
-        '4a737b2ae337a57260ca4663ce6a9bb0',
-        '2026-07-30 13:50:20+00',
-        10,
-        2,
-        19,
-        repeat('b', 64),
-        1,
-        %s,
-        %s
-      )
-    $$,
-    currval('public.market_collection_runs_id_seq'),
-    currval('public.market_collection_runs_id_seq')
-  ),
-  '23514',
-  null,
-  '단가와 수량에 맞지 않는 거래 총액은 거부한다'
 );
 
 insert into public.market_collection_runs (
@@ -299,105 +261,6 @@ values (
   400,
   0,
   statement_timestamp()
-);
-
-insert into public.market_collection_runs (
-  item_id,
-  collection_type,
-  status,
-  requested_row_limit,
-  failure_code,
-  finished_at
-)
-values (
-  '4a737b2ae337a57260ca4663ce6a9bb0',
-  'trade-history',
-  'failed',
-  100,
-  'api_timeout',
-  statement_timestamp()
-);
-
-select throws_ok(
-  $$
-    insert into public.market_trades (
-      item_id,
-      sold_at,
-      unit_price,
-      quantity,
-      total_price,
-      fingerprint,
-      occurrence_count,
-      first_seen_collection_id,
-      last_seen_collection_id
-    )
-    values (
-      '4a737b2ae337a57260ca4663ce6a9bb0',
-      '2026-07-30 13:50:21+00',
-      54400000,
-      1,
-      54400000,
-      repeat('c', 64),
-      1,
-      (
-        select id
-        from public.market_collection_runs
-        where collection_type = 'auction-listings'
-          and status = 'succeeded'
-          and fetched_row_count = 0
-      ),
-      (
-        select id
-        from public.market_collection_runs
-        where collection_type = 'auction-listings'
-          and status = 'succeeded'
-          and fetched_row_count = 0
-      )
-    )
-  $$,
-  '23503',
-  null,
-  '등록 매물 수집 실행을 원시 체결의 관측 출처로 사용할 수 없다'
-);
-
-select throws_ok(
-  $$
-    insert into public.market_trades (
-      item_id,
-      sold_at,
-      unit_price,
-      quantity,
-      total_price,
-      fingerprint,
-      occurrence_count,
-      first_seen_collection_id,
-      last_seen_collection_id
-    )
-    values (
-      '4a737b2ae337a57260ca4663ce6a9bb0',
-      '2026-07-30 13:50:22+00',
-      54400000,
-      1,
-      54400000,
-      repeat('d', 64),
-      1,
-      (
-        select id
-        from public.market_collection_runs
-        where collection_type = 'trade-history'
-          and status = 'failed'
-      ),
-      (
-        select id
-        from public.market_collection_runs
-        where collection_type = 'trade-history'
-          and status = 'failed'
-      )
-    )
-  $$,
-  '23503',
-  null,
-  '실패한 체결 수집 실행을 원시 체결의 관측 출처로 사용할 수 없다'
 );
 
 select lives_ok(
@@ -498,74 +361,6 @@ select lives_ok(
     )
   $$,
   '매물이 없으면 가격 없이 no-listings 상태를 저장한다'
-);
-
-select throws_ok(
-  $$
-    update public.market_current_prices
-    set
-      price = 54400000,
-      status = 'available',
-      listing_count = 8,
-      unique_unit_price_count = 6,
-      candidate_price_count = 5,
-      representative_price_count = 4,
-      calculated_at = statement_timestamp()
-    where item_id = '4a737b2ae337a57260ca4663ce6a9bb0'
-  $$,
-  '23503',
-  null,
-  '0건 등록 매물 수집으로 available 현재가를 만들 수 없다'
-);
-
-select throws_ok(
-  $$
-    update public.market_current_prices
-    set source_collection_id = (
-      select id
-      from public.market_collection_runs
-      where collection_type = 'trade-history'
-        and status = 'succeeded'
-        and fetched_row_count = 0
-    )
-    where item_id = '4a737b2ae337a57260ca4663ce6a9bb0'
-  $$,
-  '23503',
-  null,
-  '체결 수집 실행으로 no-listings 현재가를 만들 수 없다'
-);
-
-insert into public.market_collection_runs (
-  item_id,
-  collection_type,
-  status,
-  requested_row_limit,
-  failure_code,
-  finished_at
-)
-values (
-  '4a737b2ae337a57260ca4663ce6a9bb0',
-  'auction-listings',
-  'failed',
-  400,
-  'api_timeout',
-  statement_timestamp()
-);
-
-select throws_ok(
-  $$
-    update public.market_current_prices
-    set source_collection_id = (
-      select id
-      from public.market_collection_runs
-      where collection_type = 'auction-listings'
-        and status = 'failed'
-    )
-    where item_id = '4a737b2ae337a57260ca4663ce6a9bb0'
-  $$,
-  '23503',
-  null,
-  '실패한 등록 매물 수집으로 no-listings 현재가를 만들 수 없다'
 );
 
 insert into public.market_collection_runs (

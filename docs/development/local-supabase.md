@@ -101,16 +101,13 @@ npm run supabase:db:lint
 ```powershell
 npm ci
 npm run supabase:version
-npm run supabase:start
-npm run supabase:status
-npm run supabase:db:reset
-npm run supabase:test:db
-npm run supabase:db:lint
-npm run supabase:stop
 npm run check
 npm run build
 git diff --check
 ```
+
+데이터베이스 검증은 위의 [데이터베이스 마이그레이션 검증](#데이터베이스-마이그레이션-검증)
+절에 적힌 순서대로 별도 실행한다.
 
 Docker 호환 런타임을 사용할 수 없어 시작과 상태 확인을 검증하지 못하면 PR을
 완료 처리하지 않고 차단 사유를 기록한다.

@@ -1,26 +1,28 @@
-import { z } from 'zod';
-
 import { APP_INTERNAL_ERROR_MESSAGE } from './app-error-constants';
 
-const environmentSchema = z.object({
-  NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
-  NEXT_PUBLIC_APP_URL: z.url().default('http://localhost:3000'),
-});
-
-export type Environment = z.infer<typeof environmentSchema>;
+export type Environment = {
+  NODE_ENV: 'development' | 'test' | 'production';
+  NEXT_PUBLIC_APP_URL: string;
+};
 
 export function parseEnvironment(
   environment: Readonly<Record<string, string | undefined>>,
 ): Environment {
-  const result = environmentSchema.safeParse(environment);
+  const NODE_ENV = environment.NODE_ENV ?? 'development';
+  const NEXT_PUBLIC_APP_URL = environment.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000';
 
-  if (!result.success) {
+  try {
+    if (NODE_ENV !== 'development' && NODE_ENV !== 'test' && NODE_ENV !== 'production') {
+      throw new TypeError('Invalid NODE_ENV');
+    }
+    new URL(NEXT_PUBLIC_APP_URL);
+  } catch (cause) {
     throw new Error(APP_INTERNAL_ERROR_MESSAGE.INVALID_ENVIRONMENT, {
-      cause: result.error,
+      cause,
     });
   }
 
-  return result.data;
+  return { NODE_ENV, NEXT_PUBLIC_APP_URL };
 }
 
 export const env = Object.freeze(parseEnvironment(process.env));
