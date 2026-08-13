@@ -1,0 +1,26 @@
+name: PR 문구 컨벤션
+
+on:
+  pull_request:
+    types:
+      - opened
+      - edited
+      - reopened
+      - synchronize
+
+permissions:
+  contents: read
+
+jobs:
+  convention:
+    name: 한글 제목과 본문 검사
+    runs-on: ubuntu-24.04
+    steps:
+      - name: 저장소 확인
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: PR 문구 검사
+        env:
+          TITLE: ${{ github.event.pull_request.title }}
+          BODY: ${{ github.event.pull_request.body }}
+        run: bash .github/scripts/validate-github-content.sh pr
