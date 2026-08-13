@@ -102,6 +102,26 @@ function omitField(row: Readonly<Record<string, unknown>>, field: string): Recor
   return Object.fromEntries(Object.entries(row).filter(([name]) => name !== field));
 }
 
+function soldNumberRow(field: string, value: number): Record<string, unknown> {
+  const row = { ...MINIMAL_SOLD_ROW, [field]: value };
+  if (field === 'count') row.price = value * 100;
+  if (field === 'price') row.unitPrice = value / 2;
+  if (field === 'unitPrice') row.price = value * 2;
+  return row;
+}
+
+function listingNumberRow(field: string, value: number): Record<string, unknown> {
+  const row = { ...MINIMAL_LISTING_ROW, [field]: value };
+  if (field === 'count' || field === 'regCount') {
+    row.count = value;
+    row.regCount = value;
+    row.currentPrice = value * 100;
+  }
+  if (field === 'currentPrice') row.unitPrice = value / 2;
+  if (field === 'unitPrice') row.currentPrice = value * 2;
+  return row;
+}
+
 function getRequestedUrl(fetchMock: ReturnType<typeof vi.fn<typeof fetch>>) {
   expect(fetchMock).toHaveBeenCalledOnce();
   const call = fetchMock.mock.calls.at(0);
@@ -159,7 +179,7 @@ describe('요청 계약과 사전 검증', () => {
   )('$name는 비어 있는 API 키면 요청 전에 실패한다', async ({ apiKey, request }) => {
     const fetchMock = vi.fn<typeof fetch>();
 
-    await expect(request(fetchMock, ITEM_ID, apiKey)).rejects.toBeInstanceOf(Error);
+    await getFailure(request(fetchMock, ITEM_ID, apiKey));
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
@@ -177,7 +197,7 @@ describe('요청 계약과 사전 검증', () => {
   )('$name는 $caseName itemId면 요청 전에 실패한다', async ({ itemId, request }) => {
     const fetchMock = vi.fn<typeof fetch>();
 
-    await expect(request(fetchMock, itemId)).rejects.toBeInstanceOf(Error);
+    await getFailure(request(fetchMock, itemId));
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
@@ -356,12 +376,11 @@ describe('행 필드와 값 검증', () => {
         { caseName: '0', value: 0 },
         { caseName: '음수', value: -1 },
         { caseName: '소수', value: 1.5 },
-        { caseName: '문자열', value: '1' },
         { caseName: 'safe integer 초과', value: Number.MAX_SAFE_INTEGER + 1 },
       ].map((valueCase) => ({ ...valueCase, field })),
     ),
   )('체결 행의 $field가 $caseName이면 거부한다', async ({ field, value }) => {
-    const row = { ...MINIMAL_SOLD_ROW, [field]: value };
+    const row = soldNumberRow(field, value);
     await expectFailureCode(requestCompletedTrades(jsonFetch({ rows: [row] })), 'invalid_response');
   });
 
@@ -371,12 +390,11 @@ describe('행 필드와 값 검증', () => {
         { caseName: '0', value: 0 },
         { caseName: '음수', value: -1 },
         { caseName: '소수', value: 1.5 },
-        { caseName: '문자열', value: '1' },
         { caseName: 'safe integer 초과', value: Number.MAX_SAFE_INTEGER + 1 },
       ].map((valueCase) => ({ ...valueCase, field })),
     ),
   )('등록 매물 행의 $field가 $caseName이면 거부한다', async ({ field, value }) => {
-    const row = { ...MINIMAL_LISTING_ROW, [field]: value };
+    const row = listingNumberRow(field, value);
     await expectFailureCode(requestAuctionListings(jsonFetch({ rows: [row] })), 'invalid_response');
   });
 
@@ -512,10 +530,10 @@ describe('timeout과 재시도', () => {
     },
   );
 
-  test('네트워크 예외가 계속되면 총 3회 호출한다', async () => {
+  test.for(ENDPOINTS)('$name에서 네트워크 예외가 계속되면 총 3회 호출한다', async ({ request }) => {
     vi.useFakeTimers();
     const fetchMock = vi.fn<typeof fetch>().mockRejectedValue(new Error('network failure'));
-    const failure = expectFailureCode(requestCompletedTrades(fetchMock), 'network');
+    const failure = expectFailureCode(request(fetchMock), 'network');
 
     await vi.runAllTimersAsync();
 
@@ -523,27 +541,38 @@ describe('timeout과 재시도', () => {
     expect(fetchMock).toHaveBeenCalledTimes(3);
   });
 
-  test.for([
-    { code: 'rate_limit', status: 429 },
-    { code: 'upstream_http', status: 500 },
-    { code: 'upstream_http', status: 503 },
-  ])('HTTP $status가 계속되면 총 3회 호출하고 $code로 실패한다', async ({ code, status }) => {
-    vi.useFakeTimers();
-    const fetchMock = jsonFetch({ error: 'upstream' }, status);
-    const failure = expectFailureCode(requestCompletedTrades(fetchMock), code);
+  test.for(
+    ENDPOINTS.flatMap(({ name, request }) =>
+      [
+        { code: 'rate_limit', status: 429 },
+        { code: 'upstream_http', status: 500 },
+        { code: 'upstream_http', status: 503 },
+      ].map((httpCase) => ({ ...httpCase, name, request })),
+    ),
+  )(
+    '$name HTTP $status가 계속되면 총 3회 호출하고 $code로 실패한다',
+    async ({ code, request, status }) => {
+      vi.useFakeTimers();
+      const fetchMock = jsonFetch({ error: 'upstream' }, status);
+      const failure = expectFailureCode(request(fetchMock), code);
 
-    await vi.runAllTimersAsync();
+      await vi.runAllTimersAsync();
 
-    await failure;
-    expect(fetchMock).toHaveBeenCalledTimes(3);
-  });
+      await failure;
+      expect(fetchMock).toHaveBeenCalledTimes(3);
+    },
+  );
 
-  test.for([
-    { name: '네트워크 예외', status: null },
-    { name: 'HTTP 429', status: 429 },
-    { name: 'HTTP 500', status: 500 },
-    { name: 'HTTP 503', status: 503 },
-  ])('$name 뒤 성공하면 즉시 결과를 반환한다', async ({ status }) => {
+  test.for(
+    ENDPOINTS.flatMap(({ name, request }) =>
+      [
+        { caseName: '네트워크 예외', status: null },
+        { caseName: 'HTTP 429', status: 429 },
+        { caseName: 'HTTP 500', status: 500 },
+        { caseName: 'HTTP 503', status: 503 },
+      ].map((retryCase) => ({ ...retryCase, endpointName: name, request })),
+    ),
+  )('$endpointName의 $caseName 뒤 성공하면 즉시 결과를 반환한다', async ({ request, status }) => {
     vi.useFakeTimers();
     const fetchMock = vi.fn<typeof fetch>();
     if (status === null) {
@@ -552,7 +581,7 @@ describe('timeout과 재시도', () => {
       fetchMock.mockResolvedValueOnce(jsonResponse({ error: 'busy' }, status));
     }
     fetchMock.mockResolvedValueOnce(jsonResponse({ rows: [] }));
-    const result = requestCompletedTrades(fetchMock);
+    const result = request(fetchMock);
 
     await vi.advanceTimersByTimeAsync(249);
     expect(fetchMock).toHaveBeenCalledTimes(1);
@@ -593,63 +622,82 @@ describe('timeout과 재시도', () => {
     expect(fetchMock).toHaveBeenCalledTimes(2);
   });
 
-  test('첫 번째 재시도는 250ms 후, 두 번째 재시도는 추가 500ms 후 실행한다', async () => {
-    vi.useFakeTimers();
-    const fetchMock = vi.fn<typeof fetch>().mockRejectedValue(new Error('network failure'));
-    const failure = getFailure(requestCompletedTrades(fetchMock));
+  test.for(ENDPOINTS)(
+    '$name의 첫 번째 재시도는 250ms 후, 두 번째 재시도는 추가 500ms 후 실행한다',
+    async ({ request }) => {
+      vi.useFakeTimers();
+      const fetchMock = vi.fn<typeof fetch>().mockRejectedValue(new Error('network failure'));
+      const failure = getFailure(request(fetchMock));
 
-    await vi.advanceTimersByTimeAsync(249);
-    expect(fetchMock).toHaveBeenCalledTimes(1);
-    await vi.advanceTimersByTimeAsync(1);
-    expect(fetchMock).toHaveBeenCalledTimes(2);
-    await vi.advanceTimersByTimeAsync(499);
-    expect(fetchMock).toHaveBeenCalledTimes(2);
-    await vi.advanceTimersByTimeAsync(1);
-    expect(fetchMock).toHaveBeenCalledTimes(3);
-    expect((await failure).code).toBe('network');
-  });
+      await vi.advanceTimersByTimeAsync(249);
+      expect(fetchMock).toHaveBeenCalledTimes(1);
+      await vi.advanceTimersByTimeAsync(1);
+      expect(fetchMock).toHaveBeenCalledTimes(2);
+      await vi.advanceTimersByTimeAsync(499);
+      expect(fetchMock).toHaveBeenCalledTimes(2);
+      await vi.advanceTimersByTimeAsync(1);
+      expect(fetchMock).toHaveBeenCalledTimes(3);
+      expect((await failure).code).toBe('network');
+    },
+  );
 
-  test.for([400, 401, 403, 404, 422])(
-    'HTTP %s는 한 번만 호출하고 재시도하지 않는다',
-    async (status) => {
+  test.for(
+    ENDPOINTS.flatMap(({ name, request }) =>
+      [400, 401, 403, 404, 422].map((status) => ({ endpointName: name, request, status })),
+    ),
+  )(
+    '$endpointName HTTP $status는 한 번만 호출하고 재시도하지 않는다',
+    async ({ request, status }) => {
       const fetchMock = jsonFetch({ error: 'request' }, status);
 
-      await expectFailureCode(requestCompletedTrades(fetchMock), 'non_retryable_http');
+      await expectFailureCode(request(fetchMock), 'non_retryable_http');
       expect(fetchMock).toHaveBeenCalledOnce();
     },
   );
 
-  test('성공 응답의 JSON 파싱 실패는 한 번만 호출하고 invalid_json으로 실패한다', async () => {
-    const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(
-      new Response('{', {
-        status: 200,
-        headers: { 'content-type': 'application/json' },
-      }),
-    );
+  test.for(ENDPOINTS)(
+    '$name의 성공 응답 JSON 파싱 실패는 한 번만 호출한다',
+    async ({ request }) => {
+      const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(
+        new Response('{', {
+          status: 200,
+          headers: { 'content-type': 'application/json' },
+        }),
+      );
 
-    await expectFailureCode(requestCompletedTrades(fetchMock), 'invalid_json');
-    expect(fetchMock).toHaveBeenCalledOnce();
-  });
+      await expectFailureCode(request(fetchMock), 'invalid_json');
+      expect(fetchMock).toHaveBeenCalledOnce();
+    },
+  );
 
-  test('JSON 파싱 후 응답 검증 실패는 한 번만 호출하고 invalid_response로 실패한다', async () => {
-    const fetchMock = jsonFetch({ rows: 'invalid' });
+  test.for(ENDPOINTS)(
+    '$name의 JSON 파싱 후 응답 검증 실패는 한 번만 호출한다',
+    async ({ request }) => {
+      const fetchMock = jsonFetch({ rows: 'invalid' });
 
-    await expectFailureCode(requestCompletedTrades(fetchMock), 'invalid_response');
-    expect(fetchMock).toHaveBeenCalledOnce();
-  });
+      await expectFailureCode(request(fetchMock), 'invalid_response');
+      expect(fetchMock).toHaveBeenCalledOnce();
+    },
+  );
 
-  test.for([
-    { code: 'invalid_json', name: 'JSON 파싱 실패', response: new Response('{') },
-    { code: 'invalid_response', name: '응답 검증 실패', response: jsonResponse({ rows: null }) },
-  ])(
-    '재시도 가능한 실패 뒤 $name가 오면 세 번째 요청 없이 $code로 실패한다',
-    async ({ code, response }) => {
+  test.for(
+    ENDPOINTS.flatMap(({ name, request }) =>
+      [
+        { code: 'invalid_json', caseName: 'JSON 파싱 실패' },
+        { code: 'invalid_response', caseName: '응답 검증 실패' },
+      ].map((failureCase) => ({ ...failureCase, endpointName: name, request })),
+    ),
+  )(
+    '$endpointName의 재시도 가능한 실패 뒤 $caseName가 오면 세 번째 요청 없이 $code로 실패한다',
+    async ({ code, request }) => {
       vi.useFakeTimers();
       const fetchMock = vi
         .fn<typeof fetch>()
         .mockResolvedValueOnce(jsonResponse({ error: 'busy' }, 503))
-        .mockResolvedValueOnce(response);
-      const failure = expectFailureCode(requestCompletedTrades(fetchMock), code);
+        .mockResolvedValueOnce(
+          code === 'invalid_json' ? new Response('{') : jsonResponse({ rows: null }),
+        );
+      const failure = expectFailureCode(request(fetchMock), code);
 
       await vi.advanceTimersByTimeAsync(250);
 
@@ -660,42 +708,52 @@ describe('timeout과 재시도', () => {
 });
 
 describe('오류 계약과 비밀값 비노출', () => {
-  test('API 키와 쿼리 문자열이 포함된 전체 URL을 오류에 노출하지 않는다', async () => {
-    const fetchMock = jsonFetch({ error: 'unauthorized' }, 401);
+  test.for(ENDPOINTS)(
+    '$name는 API 키와 쿼리 문자열이 포함된 전체 URL을 오류에 노출하지 않는다',
+    async ({ request }) => {
+      const fetchMock = jsonFetch({ error: 'unauthorized' }, 401);
 
-    const error = await expectFailureCode(requestCompletedTrades(fetchMock), 'non_retryable_http');
-    const exposed = [error.message, String(error.cause), JSON.stringify(error)].join('\n');
-    expect(exposed).not.toContain(API_KEY);
-    expect(exposed).not.toContain('https://api.neople.co.kr/df/auction-sold?');
-  });
+      const error = await expectFailureCode(request(fetchMock), 'non_retryable_http');
+      const exposed = [error.message, String(error.cause), JSON.stringify(error)].join('\n');
+      const { url } = getRequestedUrl(fetchMock);
+      expect(exposed).not.toContain(API_KEY);
+      expect(exposed).not.toContain(`${url.origin}${url.pathname}?`);
+    },
+  );
 
-  test('HTTP 오류 응답 본문을 오류에 노출하지 않는다', async () => {
-    vi.useFakeTimers();
-    const secret = 'http-body-secret-sentinel';
-    const fetchMock = vi
-      .fn<typeof fetch>()
-      .mockResolvedValue(new Response(secret, { status: 500 }));
-    const failure = expectFailureCode(requestCompletedTrades(fetchMock), 'upstream_http');
+  test.for(ENDPOINTS)(
+    '$name는 HTTP 오류 응답 본문을 오류에 노출하지 않는다',
+    async ({ request }) => {
+      vi.useFakeTimers();
+      const secret = 'http-body-secret-sentinel';
+      const fetchMock = vi
+        .fn<typeof fetch>()
+        .mockResolvedValue(new Response(secret, { status: 500 }));
+      const failure = expectFailureCode(request(fetchMock), 'upstream_http');
 
-    await vi.runAllTimersAsync();
+      await vi.runAllTimersAsync();
 
-    const error = await failure;
-    const exposed = [error.message, String(error.cause), JSON.stringify(error)].join('\n');
-    expect(exposed).not.toContain(secret);
-  });
+      const error = await failure;
+      const exposed = [error.message, String(error.cause), JSON.stringify(error)].join('\n');
+      expect(exposed).not.toContain(secret);
+    },
+  );
 
-  test('네트워크 예외 원문의 비밀값을 오류에 노출하지 않는다', async () => {
-    vi.useFakeTimers();
-    const secret = 'network-error-secret-sentinel';
-    const fetchMock = vi.fn<typeof fetch>().mockRejectedValue(new Error(secret));
-    const failure = expectFailureCode(requestCompletedTrades(fetchMock), 'network');
+  test.for(ENDPOINTS)(
+    '$name는 네트워크 예외 원문의 비밀값을 오류에 노출하지 않는다',
+    async ({ request }) => {
+      vi.useFakeTimers();
+      const secret = 'network-error-secret-sentinel';
+      const fetchMock = vi.fn<typeof fetch>().mockRejectedValue(new Error(secret));
+      const failure = expectFailureCode(request(fetchMock), 'network');
 
-    await vi.runAllTimersAsync();
+      await vi.runAllTimersAsync();
 
-    const error = await failure;
-    const exposed = [error.message, String(error.cause), JSON.stringify(error)].join('\n');
-    expect(exposed).not.toContain(secret);
-  });
+      const error = await failure;
+      const exposed = [error.message, String(error.cause), JSON.stringify(error)].join('\n');
+      expect(exposed).not.toContain(secret);
+    },
+  );
 });
 
 describe('저장소 통합', () => {
