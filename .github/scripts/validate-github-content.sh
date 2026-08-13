@@ -7,10 +7,14 @@ title="${TITLE:-}"
 body="${BODY:-}"
 errors=()
 
-if [[ "$mode" == "pr" ]]; then
-  title_pattern='^(feat|fix|docs|test|refactor|perf|build|ci|chore|revert)(\([a-z0-9-]+\))?!?: .*[가-힣].*$'
+contains_korean() {
+  LC_ALL=C.UTF-8 grep -qP '[\x{AC00}-\x{D7A3}]' <<< "$1"
+}
 
-  if [[ ! "$title" =~ $title_pattern ]]; then
+if [[ "$mode" == "pr" ]]; then
+  title_pattern='^(feat|fix|docs|test|refactor|perf|build|ci|chore|revert)(\([a-z0-9-]+\))?!?: .+$'
+
+  if [[ ! "$title" =~ $title_pattern ]] || ! contains_korean "$title"; then
     errors+=("PR 제목은 '<type>(<scope>): <한글 설명>' 형식이어야 합니다.")
   fi
 
@@ -24,11 +28,11 @@ if [[ "$mode" == "pr" ]]; then
     errors+=("PR 본문에 'Closes #번호' 또는 'Refs #번호' 형식의 이슈 연결이 필요합니다.")
   fi
 elif [[ "$mode" == "issue" ]]; then
-  if [[ "$title" == "[이슈]" || "$title" == "[이슈] " || ! "$title" =~ [가-힣] ]]; then
+  if [[ "$title" == "[이슈]" || "$title" == "[이슈] " || ! contains_korean "$title" ]]; then
     errors+=("이슈 제목에 한글 설명을 작성해야 합니다.")
   fi
 
-  if ! grep -Eq '[가-힣]' <<< "$body"; then
+  if ! contains_korean "$body"; then
     errors+=("이슈 본문에 한글 설명을 작성해야 합니다.")
   fi
 else
