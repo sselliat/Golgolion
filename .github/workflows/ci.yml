@@ -12,8 +12,8 @@ permissions:
   contents: read
 
 jobs:
-  typecheck:
-    name: Typecheck
+  build:
+    name: Build
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout repository
@@ -31,21 +31,29 @@ jobs:
       - name: Run TypeScript typecheck
         run: npm run typecheck
 
-  build:
-    name: Build
-    runs-on: ubuntu-24.04
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-
-      - name: Set up Node.js
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
-        with:
-          node-version: 24
-          cache: npm
-
-      - name: Install dependencies
-        run: npm ci
-
       - name: Build Next.js application
         run: npm run build
+
+      - name: Start local PostgreSQL
+        run: npx supabase db start
+
+      - name: Reapply database migrations
+        run: npm run supabase:db:reset
+
+      - name: Run database tests
+        run: npm run supabase:test:db
+
+      - name: Lint public database schema
+        run: npm run supabase:db:lint
+
+      - name: Stop local PostgreSQL
+        if: always()
+        run: npx supabase stop --no-backup
+
+  # main 보호 규칙의 기존 필수 검사 이름을 유지한다.
+  typecheck:
+    name: Typecheck
+    needs: build
+    runs-on: ubuntu-24.04
+    steps:
+      - run: echo "Typecheck completed in Build"

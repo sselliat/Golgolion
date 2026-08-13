@@ -23,7 +23,10 @@ describe('parseEnvironment', () => {
     });
   });
 
-  test('잘못된 URL이면 안전한 설정 오류를 발생시킨다', () => {
+  test('잘못된 환경변수면 안전한 설정 오류를 발생시킨다', () => {
+    expect(() => parseEnvironment({ NODE_ENV: 'staging' })).toThrow(
+      APP_INTERNAL_ERROR_MESSAGE.INVALID_ENVIRONMENT,
+    );
     expect(() => parseEnvironment({ NEXT_PUBLIC_APP_URL: 'not-a-url' })).toThrow(
       APP_INTERNAL_ERROR_MESSAGE.INVALID_ENVIRONMENT,
     );

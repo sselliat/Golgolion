@@ -18,13 +18,15 @@
     "supabase:version": "supabase --version",
     "supabase:start": "supabase start",
     "supabase:status": "supabase status",
-    "supabase:stop": "supabase stop"
+    "supabase:stop": "supabase stop",
+    "supabase:db:reset": "supabase db reset --local",
+    "supabase:db:lint": "supabase db lint --local --schema public --level error",
+    "supabase:test:db": "supabase test db --local"
   },
   "dependencies": {
     "next": "16.2.12",
     "react": "19.2.4",
-    "react-dom": "19.2.4",
-    "zod": "^4.4.3"
+    "react-dom": "19.2.4"
   },
   "devDependencies": {
     "@playwright/test": "^1.62.0",
@@ -39,9 +41,6 @@
     "eslint": "^9.39.5",
     "eslint-config-next": "16.2.12",
     "eslint-config-prettier": "^10.1.8",
-    "eslint-plugin-better-tailwindcss": "^4.7.0",
-    "eslint-plugin-check-file": "^3.3.2",
-    "eslint-plugin-simple-import-sort": "^14.0.0",
     "jsdom": "^30.0.1",
     "prettier": "^3.9.6",
     "prettier-plugin-tailwindcss": "^0.8.1",

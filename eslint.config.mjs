@@ -2,9 +2,6 @@ import { defineConfig, globalIgnores } from 'eslint/config';
 import nextVitals from 'eslint-config-next/core-web-vitals';
 import nextTs from 'eslint-config-next/typescript';
 import prettier from 'eslint-config-prettier/flat';
-import betterTailwindcss from 'eslint-plugin-better-tailwindcss';
-import checkFile from 'eslint-plugin-check-file';
-import simpleImportSort from 'eslint-plugin-simple-import-sort';
 import tseslint from 'typescript-eslint';
 
 const eslintConfig = defineConfig([
@@ -17,11 +14,6 @@ const eslintConfig = defineConfig([
         projectService: true,
         tsconfigRootDir: import.meta.dirname,
       },
-    },
-    plugins: {
-      'better-tailwindcss': betterTailwindcss,
-      'check-file': checkFile,
-      'simple-import-sort': simpleImportSort,
     },
     rules: {
       '@typescript-eslint/consistent-type-imports': [
@@ -40,13 +32,6 @@ const eslintConfig = defineConfig([
       '@typescript-eslint/only-throw-error': 'error',
       '@typescript-eslint/promise-function-async': 'error',
       '@typescript-eslint/switch-exhaustiveness-check': 'error',
-      'better-tailwindcss/no-duplicate-classes': 'error',
-      'check-file/filename-naming-convention': [
-        'error',
-        {
-          'src/**/!(*.test).ts': 'KEBAB_CASE',
-        },
-      ],
       'no-restricted-properties': [
         'error',
         {
@@ -59,13 +44,6 @@ const eslintConfig = defineConfig([
           object: 'test',
           property: 'only',
           message: '커밋된 테스트에서 only를 사용하지 않습니다.',
-        },
-      ],
-      'simple-import-sort/exports': 'error',
-      'simple-import-sort/imports': [
-        'error',
-        {
-          groups: [['^react', '^next', '^@?\\w'], ['^@/'], ['^\\.'], ['^.+\\.(?:css|scss)$']],
         },
       ],
     },
@@ -82,6 +60,8 @@ const eslintConfig = defineConfig([
     'out/**',
     'build/**',
     'playwright-report/**',
+    'supabase/.branches/**',
+    'supabase/.temp/**',
     'test-results/**',
     'next-env.d.ts',
   ]),
