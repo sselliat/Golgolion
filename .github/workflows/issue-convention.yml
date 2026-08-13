@@ -12,7 +12,6 @@ permissions:
 
 jobs:
   convention:
-    if: ${{ !github.event.issue.pull_request }}
     name: 한글 제목과 본문 검사
     runs-on: ubuntu-24.04
     steps:

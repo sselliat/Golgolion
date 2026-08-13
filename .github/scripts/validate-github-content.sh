@@ -18,7 +18,7 @@ if [[ "$mode" == "pr" ]]; then
     errors+=("PR 제목은 '<type>(<scope>): <한글 설명>' 형식이어야 합니다.")
   fi
 
-  for heading in '## 개요' '## 주요 변경 사항' '## 변경 파일' '## 검증' '## 영향' '## 관련 이슈'; do
+  for heading in '## 개요' '## 주요 변경 사항' '## 검증' '## 영향' '## 관련 이슈'; do
     if ! grep -Fq -- "$heading" <<< "$body"; then
       errors+=("PR 본문에 '$heading' 섹션이 필요합니다.")
     fi
