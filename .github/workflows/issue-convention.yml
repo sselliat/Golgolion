@@ -1,0 +1,47 @@
+name: 이슈 문구 컨벤션
+
+on:
+  issues:
+    types:
+      - opened
+      - edited
+      - reopened
+
+permissions:
+  issues: write
+
+jobs:
+  convention:
+    name: 한글 제목과 본문 검사
+    runs-on: ubuntu-24.04
+    steps:
+      - name: 저장소 확인
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: 이슈 문구 검사
+        id: validate
+        continue-on-error: true
+        env:
+          TITLE: ${{ github.event.issue.title }}
+          BODY: ${{ github.event.issue.body }}
+        run: bash .github/scripts/validate-github-content.sh issue
+
+      - name: 위반 안내 댓글 작성
+        if: steps.validate.outcome == 'failure'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          marker='<!-- korean-content-convention -->'
+          if ! gh api "repos/$REPOSITORY/issues/$ISSUE_NUMBER/comments" --paginate --jq '.[].body' | grep -Fq -- "$marker"; then
+            gh api "repos/$REPOSITORY/issues/$ISSUE_NUMBER/comments" \
+              -f body="$marker
+          이 이슈는 제목과 본문을 한글로 작성해야 합니다.
+          코드 식별자, 명령어, URL, 이슈 번호는 필요한 경우 원문을 사용할 수 있습니다.
+          이슈 템플릿의 필수 항목을 한글로 보완해 주세요."
+          fi
+
+      - name: 이슈 검사 결과 반영
+        if: steps.validate.outcome == 'failure'
+        run: exit 1

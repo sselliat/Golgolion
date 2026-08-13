@@ -8,14 +8,14 @@
 검사 명령과 설정을 활성화했고, issue #15에서 TypeScript와 Next.js build CI 및
 merge gate를 적용했다.
 
-| 항목                            | 현재 상태            | 활성화 시점                 |
-| ------------------------------- | -------------------- | --------------------------- |
-| Markdown과 Prettier             | 로컬 script 적용     | GOL-002                     |
-| ESLint, TypeScript, Vitest      | 로컬 script 적용     | GOL-002                     |
-| Playwright와 Next.js build 검사 | 로컬 script 적용     | GOL-002                     |
-| GitHub Actions와 merge gate     | typecheck·build 적용 | issue #15                   |
-| coverage 명령                   | 로컬 script 적용     | GOL-002                     |
-| coverage threshold              | 수치 미확정          | GOL-003 도메인 구현 측정 후 |
+| 항목                            | 현재 상태                     | 활성화 시점                 |
+| ------------------------------- | ----------------------------- | --------------------------- |
+| Markdown과 Prettier             | 로컬 script 적용              | GOL-002                     |
+| ESLint, TypeScript, Vitest      | 로컬 script 적용              | GOL-002                     |
+| Playwright와 Next.js build 검사 | 로컬 script 적용              | GOL-002                     |
+| GitHub Actions와 merge gate     | 코드 검사와 PR 문구 검사 적용 | issue #15 및 문구 컨벤션    |
+| coverage 명령                   | 로컬 script 적용              | GOL-002                     |
+| coverage threshold              | 수치 미확정                   | GOL-003 도메인 구현 측정 후 |
 
 설정 파일과 실행 명령이 저장소에 추가되고 검증된 항목만 현재 적용 중인 검사로
 간주한다. 구현 상태가 바뀌면 이 표를 같은 변경에서 갱신한다.
@@ -153,18 +153,20 @@ eslint .
 - 일시적인 외부 사이트 장애와 실제 broken link를 구분하도록 제한된 재시도와 cache를 사용한다.
 - 링크 검사 예외에는 구체적인 사유를 기록한다.
 
-## PR 제목
+## PR 제목과 문구
 
 - squash merge의 최종 메시지가 되는 PR 제목을 GitHub Actions에서 검사한다.
 - 작업 브랜치의 임시 커밋에는 commitlint를 강제하지 않는다.
 - 최종 squash 제목은 merge 전에 Conventional Commits 규칙을 통과해야 한다.
 - 허용 type은 커밋 규칙에서 합의한 목록과 동일하다.
 - 설명이 비어 있거나 type 형식이 잘못된 PR 제목은 검사에 실패한다.
+- PR 제목 설명과 본문은 한글이어야 하며, 표준 섹션과 이슈 연결을 포함해야 한다.
+- 이슈는 템플릿을 사용하고, 한글 규칙 위반 시 안내 댓글과 실패한 검사가 남는다.
 
 ## GitHub Actions와 merge gate
 
 - pull request와 `main` push에서 CI를 실행한다.
-- CI는 `npm ci`, Prettier, ESLint, TypeScript, Vitest, coverage, Next.js build, Playwright, Markdown, 링크 및 PR 제목 검사를 수행한다.
+- CI는 `npm ci`, Prettier, ESLint, TypeScript, Vitest, coverage, Next.js build, Playwright, Markdown, 링크, PR 제목 및 이슈·PR 문구 검사를 수행한다.
 - 서로 독립적인 검사는 가능한 범위에서 병렬로 실행한다.
 - 검사 이름은 workflow 사이에서 중복되지 않게 고정한다.
 - 최신 커밋에서 모든 필수 검사가 통과해야 merge할 수 있다.
